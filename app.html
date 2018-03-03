@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>鼠标移入移出容器效果</title>
+    <style>
+        .container {
+            width: 500px;
+            height: 400px;
+            background-color: #ccc;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .shade {
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, .3);
+            position: absolute;
+            display: none;
+        }
+
+        .trans {
+            transition: all .2s;
+            backface-visibility: hidden;
+        }
+    </style>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="shade"></div>
+    </div>
+</body>
+<script>
+    var DIR_POS = {
+        left: {
+            top: '0',
+            left: '-100%'
+        },
+        right: {
+            top: '0',
+            left: '100%'
+        },
+        bottom: {
+            top: '100%',
+            left: '0'
+        },
+        top: {
+            top: '-100%',
+            left: '0'
+        }
+    };
+
+    function mouseDirection(element, opts) {
+        var dirs = ['top', 'right', 'bottom', 'left'];
+        // 判断鼠标从(上下左右哪个方向进入)
+        var calculate = function (e) {
+            var w = $(element).outerWidth(),
+                h = $(element).outerHeight(),
+                l = element.offsetLeft,
+                t = element.offsetTop,
+                x = (e.pageX - l - (w / 2)) * (w > h ? (h / w) : 1),
+                y = (e.pageY - t - (h / 2)) * (h > w ? (w / h) : 1);
+            return Math.round((((Math.atan2(y, x) * (180 / Math.PI)) + 180) / 90) + 3) % 4;
+        }
+        $(element).on('mouseenter', function (e) {
+            opts.enter(element, dirs[calculate(e)]);
+        }).on('mouseleave', function (e) {
+            opts.leave(element, dirs[calculate(e)]);
+        })
+    }
+
+    $(function () {
+        $('.container').each(function () {
+            mouseDirection(this, {
+                enter: function (element, dir) {
+                    var box = $(element).find('.shade');
+                    box.removeClass('trans');
+                    box.css(
+                        $.extend({}, DIR_POS[dir], {
+                            'display': 'block'
+                        })
+                    );
+                    box.animate({
+                        left: '0',
+                        top: '0'
+                    }, 200);
+                },
+                leave: function (element, dir) {
+                    $(element).find('.shade').animate(DIR_POS[dir], 200);
+                }
+            });
+        })
+    })
+</script>
+
+</html>
